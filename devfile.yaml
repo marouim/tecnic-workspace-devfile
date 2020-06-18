@@ -1,0 +1,41 @@
+metadata:
+  name: ws-synchro-dev
+projects:
+  - name: tecnic-container
+    source:
+      location: "git@gitlab.com:tecnic2000/tecnic-container.git"
+      type: git
+components:
+  - mountSources: true
+    endpoints:
+      - name: 8080-tcp
+        port: 8080
+    memoryLimit: 512Mi
+    type: dockerimage
+    alias: php
+    image: "quay.io/marouim/php56:latest"
+  - mountSources: true
+    command:
+      - tail
+    args:
+      - "-f"
+      - /dev/null
+    memoryLimit: 512Mi
+    type: dockerimage
+    volumes:
+      - name: kubeconfig
+        containerPath: /.kube
+    alias: oc
+    image: "quay.io/openshift/origin-cli:4.5"
+apiVersion: 1.0.0
+commands:
+  - name: Start Apache Web Server
+    actions:
+      - type: exec
+        command: source /projects/tecnic-container/devsource.sh && httpd -k start
+        component: php
+  - name: Stop Apache Web Server
+    actions:
+      - type: exec
+        command: httpd -k stop
+        component: php
